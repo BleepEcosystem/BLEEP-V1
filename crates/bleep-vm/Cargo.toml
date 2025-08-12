@@ -1,5 +1,5 @@
 [package]
-name = "bleep"
+name = "bleep-vm"
 version = "0.1.0"
 edition = "2021"
 
@@ -34,48 +34,40 @@ sp-runtime = "16.0.0"
 ink = { version = "4.2.1", default-features = false, features = ["std"] }
 
 # Consensus and networking
-libp2p = { version = "0.53", features = ["tcp", "websocket", "noise", "mplex", "yamux"] }
+libp2p = { version = "0.53", features = ["tcp", "websocket", "noise", "yamux"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 bincode = "1.3"
 
 # ZKP and Circom
-ark-circom = "0.3.0"
+ark-circom = "0.5.0"
 ark-groth16 = "0.4.0"
 ark-bn254 = "0.4.0"
 
 # Post-quantum cryptography (assumed modules)
-pqcrypto = { version = "0.7.2", features = ["kyber768", "sphincs-shake-256f"] }
+pqcrypto = "0.18.1"
 
 # RocksDB for shard persistence
 rocksdb = "0.21.0"
 
 # Ethereum / EVM
-ethers = { version = "2.0.10", features = ["abigen", "contract", "providers", "wallet"] }
+ethers = { version = "2.0.10", features = ["abigen"] }
 
-# Solana
-solana-client = "1.17"
-solana-sdk = "1.17"
 
 # Bitcoin
 bitcoin = "0.30"
 
 # Cosmos IBC (hypothetical SDK wrapper)
-cosmos-sdk = "0.1.0"  # Replace with actual crate if available
 
-# Aptos
-aptos-sdk = "0.4.2"
 
 # Sui
-sui-sdk = "0.1.0"  # Replace with actual or wrapper
+sui-sdk = "0.0.0"  # Replace with actual or wrapper
 
-# TON
-ton-blockchain = "0.1.0"  # Replace with actual crate or bindings
 
 # Machine Learning / AI
 tch = "0.13.0"            # PyTorch for Rust
-tensorflow = "0.20.0"     # For smart contract optimizer model
-linfa = "0.6.0"           # Classical ML algorithms
+tensorflow = "0.21.0"     # For smart contract optimizer model
+linfa = "0.7.1"           # Classical ML algorithms
 
 # LRU cache
 lru = "0.11.0"
@@ -83,8 +75,6 @@ lru = "0.11.0"
 # Time and utilities
 chrono = { version = "0.4", features = ["serde"] }
 
-# Quantum simulator (hypothetical or mocked)
-quantum-mock = "0.5.0"  # Replace with real lib if available
 
 # Errors
 thiserror = "1.0"
@@ -93,7 +83,5 @@ thiserror = "1.0"
 default = ["std"]
 std = ["ink/std", "frame-support/std", "frame-system/std", "sp-runtime/std"]
 
-[workspace]
-members = [
-    "crates/bleep-vm",
-]
+
+
