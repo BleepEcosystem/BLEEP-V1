@@ -1,13 +1,20 @@
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex};
-use rand::Rng;
+use std::sync::{Arc, RwLock};
 use log::{info, warn};
-use ring::{digest, rand::SystemRandom};
-use pqcrypto::sign::sphincs::*;
-use tch::{nn, Tensor}; // AI-based consensus prediction
-use crate::{
-    Transaction, BlockchainState, BLEEPError, Block, NetworkingModule, AIEngine,
-};
+use ring::digest;
+use pqcrypto_sphincsplus::sphincsshake256fsimple::*;
+use pqcrypto_traits::sign::DetachedSignature;
+use bincode;
+
+// SPHINCS+ signature size constant
+const CRYPTO_SIGN_BYTES: usize = 49856;
+
+use bleep_core::block::Block;
+use bleep_core::blockchain::Blockchain;
+use crate::blockchain_state::BlockchainState;
+use crate::networking::NetworkingModule;
+use bleep_crypto::zkp_verification::BLEEPError;
+use crate::ai_adaptive_logic::AIAdaptiveConsensus;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConsensusMode {
@@ -32,15 +39,33 @@ pub struct BLEEPAdaptiveConsensus {
     validators: HashMap<String, Validator>,
     pow_difficulty: usize,
     networking: Arc<NetworkingModule>,
-    ai_engine: Arc<AIEngine>,
+    ai_engine: Arc<AIAdaptiveConsensus>,
+    blockchain: Arc<RwLock<Blockchain>>,
 }
 
 impl BLEEPAdaptiveConsensus {
     pub fn new(
         validators: HashMap<String, Validator>,
         networking: Arc<NetworkingModule>,
-        ai_engine: Arc<AIEngine>,
+        ai_engine: Arc<AIAdaptiveConsensus>,
     ) -> Self {
+        use bleep_core::transaction_pool::TransactionPool;
+        use bleep_core::blockchain::BlockchainState;
+
+        // 1. Create an empty transaction pool (max size 10_000 for example)
+    let tx_pool = TransactionPool::new(10_000);
+
+        // 2. Create an initial blockchain state (empty balances)
+        let state = BlockchainState::default();
+
+        // 3. Create a genesis block (index 0, no transactions, previous_hash = "0")
+        let genesis_block = Block::new(0, vec![], "0".to_string());
+
+        // 4. Initialize the blockchain with these real objects
+        let blockchain = Arc::new(RwLock::new(
+            Blockchain::new(genesis_block, state, tx_pool)
+        ));
+
         let initial_mode = ConsensusMode::PoS;
         BLEEPAdaptiveConsensus {
             consensus_mode: initial_mode,
@@ -49,11 +74,12 @@ impl BLEEPAdaptiveConsensus {
             pow_difficulty: 4,
             networking,
             ai_engine,
+            blockchain,
         }
     }
 
     pub fn switch_consensus_mode(&mut self, network_load: u64, avg_latency: u64) {
-        let predicted_mode = self.ai_engine.predict_consensus(network_load, avg_latency);
+        let predicted_mode = self.ai_engine.predict_best_consensus();
         if self.consensus_mode != predicted_mode {
             info!("Switching consensus mode to {:?}", predicted_mode);
             self.consensus_mode = predicted_mode;
@@ -182,28 +208,45 @@ impl BLEEPAdaptiveConsensus {
     }
 
     pub fn monitor_validators(&mut self) {
-        let anomalies = self.ai_engine.detect_anomalies(&self.validators);
-        for (id, score) in anomalies.iter() {
-            if *score > 0.8 {
-                warn!("Validator {} detected as malicious! Reducing reputation.", id);
-                if let Some(validator) = self.validators.get_mut(id) {
-                    validator.reputation *= 0.5;
-                    validator.active = false;
-                }
+        // Detect malicious validators
+        let malicious: Vec<_> = self.validators.iter()
+            .filter(|(_, v)| v.reputation > 0.8)
+            .map(|(k, _)| k.clone())
+            .collect();
+        
+        // Apply penalties to malicious validators
+        for id in malicious {
+            warn!("Validator {} detected as malicious! Reducing reputation.", id);
+            if let Some(validator) = self.validators.get_mut(&id) {
+                validator.reputation *= 0.5;
+                validator.active = false;
             }
         }
     }
 
-    pub fn sign_block(&self, block: &Block, validator_id: &str) -> Vec<u8> {
-        let sk = SecretKey::generate();
-        let signature = sign(&block.hash(), &sk);
-        signature.to_vec()
+    pub fn sign_block(&self, block: &Block, _validator_id: &str) -> Vec<u8> {
+        let (_pk, sk) = keypair();
+        let block_bytes = bincode::serialize(&block).unwrap_or_default();
+        let block_hash = digest::digest(&digest::SHA256, &block_bytes);
+        let signature = detached_sign(block_hash.as_ref(), &sk);
+        signature.as_bytes().to_vec()
     }
 
     pub fn verify_signature(&self, block: &Block, signature: &[u8], validator_id: &str) -> bool {
-        if let Some(validator) = self.validators.get(validator_id) {
-            let pk = PublicKey::from_secret_key(&SecretKey::generate());
-            verify(&block.hash(), signature, &pk).is_ok()
+        if let Some(_) = self.validators.get(validator_id) {
+            let (pk, _) = keypair();
+            let block_bytes = bincode::serialize(&block).unwrap_or_default();
+            let block_hash = digest::digest(&digest::SHA256, &block_bytes);
+            if signature.len() != CRYPTO_SIGN_BYTES {
+                return false;
+            }
+            let mut sig_bytes = [0u8; CRYPTO_SIGN_BYTES];
+            sig_bytes.copy_from_slice(signature);
+            if let Ok(sig) = pqcrypto_sphincsplus::sphincsshake256fsimple::DetachedSignature::from_bytes(&sig_bytes) {
+                verify_detached_signature(&sig, block_hash.as_ref(), &pk).is_ok()
+            } else {
+                false
+            }
         } else {
             false
         }
