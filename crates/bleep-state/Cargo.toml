@@ -1,9 +1,10 @@
 [package]
-name = "bleep-sharding"
+name = "bleep-state"
 version = "1.0.0"
 edition = "2021"
 
 [dependencies]
+# Blockchain cryptography and SDKs
 # Blockchain & Runtime
 log = "0.4.21"
 serde = { version = "1.0", features = ["derive"] }
@@ -22,19 +23,20 @@ rand = "0.8.5"
 hex = "0.4.3"
 
 # Quantum Cryptography (you must implement wrappers or FFI to these)
-pqcrypto = "0.15.1"
+pqcrypto = "0.18.1"
 pqcrypto-kyber = "0.8.0"
 pqcrypto-falcon = "0.4.0"
 
 # Zero-Knowledge Proofs (ZK-SNARKS, SPHINCS+ and others)
-ark-groth16 = "0.5.0"
+ark-groth16 = "0.4.0"
 ark-bls12-381 = "0.4.0"
-ark-ff = "0.4.2"
+ark-ff = "0.4.0"
 ark-crypto-primitives = "0.4.0"
 
 # AI (ML Prediction)
-linfa = "0.6.0"
-linfa-knn = "0.6.0"
+linfa = "0.7.1"
+linfa-nn = "0.7.2"
+ndarray = "0.15.1"
 tch = { version = "0.13", features = ["download-libtorch"] }
 
 # Persistent storage
@@ -44,9 +46,7 @@ rocksdb = "0.21.0"
 tokio = { version = "1.36", features = ["full"] }
 
 [features]
-default = ["std"]
+default = []
 
-[workspace]
-members = [
-    "crates/bleep-state",
-]
+
+
