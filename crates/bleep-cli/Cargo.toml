@@ -1,5 +1,5 @@
 [package]
-name = "bleep"
+name = "bleep-cli"
 version = "1.0.0"
 edition = "2021"
 authors = ["Muhammad Attahir"]
@@ -18,14 +18,14 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 anyhow = "1.0.80"
 
 # Your internal crates (assumed path or workspace setup)
-bleep_core = { path = "crates/bleep_core" }
-bleep_wallet_core = { path = "crates/bleep_wallet_core" }
-bleep_ai = { path = "crates/bleep_ai" }
-bleep_crypto = { path = "crates/bleep_crypto" }
-bleep_pat = { path = "crates/bleep_pat" }
-bleep_state = { path = "crates/bleep_state" }
-bleep_telemetry = { path = "crates/bleep_telemetry" }
-bleep_governance = { path = "crates/bleep_governance" }
+bleep-core = { path = "../bleep-core" }
+bleep-wallet-core = { path = "../bleep-wallet-core" }
+bleep-ai = { path = "../bleep-ai" }
+bleep-crypto = { path = "../bleep-crypto" }
+bleep-pat = { path = "../bleep-pat" }
+bleep-state = { path = "../bleep-state" }
+bleep-telemetry = { path = "../bleep-telemetry" }
+bleep-governance = { path = "../bleep-governance" }
 
 [[bin]]
 name = "bleep-cli"
@@ -35,7 +35,7 @@ path = "src/bin/cli.rs"
 name = "rpc"
 path = "src/bin/rpc.rs"
 
-[workspace]
+
 members = [
     "crates/bleep-cli",
 ]
