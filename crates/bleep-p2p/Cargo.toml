@@ -15,7 +15,7 @@ async-trait = "0.1.77"
 parking_lot = "0.12.1"
 
 # Networking
-libp2p = { version = "0.53.2", features = ["tcp-tokio", "dns", "gossipsub", "identify", "mdns", "kad", "yamux"] }
+libp2p = { version = "0.53.2", features = ["tcp", "dns", "gossipsub", "identify", "mdns", "kad", "yamux"] }
 quinn = "0.10.2"
 noise-protocol = "0.2.0"
 
@@ -41,9 +41,9 @@ hex = "0.4.3"
 
 # AI / ML integration
 smartcore = "0.3.2"
-linfa = "0.6.1"
-linfa-clustering = "0.6.1"
-ndarray = "0.15.6"
+linfa = "0.7.1"
+linfa-clustering = "0.7.1"
+ndarray = "0.15.1"
 
 # Logging
 log = "0.4.21"
@@ -65,7 +65,5 @@ kyber = ["pqcrypto-kyber"]
 falcon = ["pqcrypto-falcon"]
 quantum = ["pqcrypto", "pqcrypto-kyber", "pqcrypto-falcon"]
 
-[workspace]
-members = [
-    "crates/bleep-p2p",
-]
+
+
