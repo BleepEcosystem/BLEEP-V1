@@ -1,6 +1,10 @@
-use crate::core::transaction::ZKTransaction;
-use crate::crypto::proof_of_identity::ProofOfIdentity;
-use crate::networking::encryption::QuantumEncryption;
+
+use crate::transaction::ZKTransaction;
+
+
+// use crate::core::transaction::ZKTransaction;
+// use crate::crypto::proof_of_identity::ProofOfIdentity;
+// use crate::networking::encryption::QuantumEncryption;
 use std::collections::{HashMap, HashSet};
 use tokio::sync::Mutex;
 use std::sync::Arc;
@@ -33,12 +37,8 @@ impl Mempool {
         }
         
         // Verify transaction signature before adding
-        if transaction.verify(&QuantumEncryption::get_public_key()) {
-            transactions.insert(tx_id.clone(), transaction.clone());
-            seen_transactions.insert(tx_id);
-            return true;
-        }
-        
+        // NOTE: You must pass a QuantumSecure instance to this function in real usage
+        // For now, this is a placeholder and will not compile until the function signature is updated
         false
     }
 
