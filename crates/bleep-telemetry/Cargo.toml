@@ -1,3 +1,10 @@
+[package]
+name = "bleep-telemetry"
+version = "0.1.0"
+edition = "2021"
+authors = ["Muhammad Attahir <bleepecosystem@gmail.com>"]
+description = "Telemetry and metrics collection for BLEEP blockchain."
+license = "MIT OR Apache-2.0"
 [dependencies]
 # Logging & Time
 log = "0.4"
@@ -17,11 +24,9 @@ time = "0.3"
 base64 = "0.21"
 
 # Optional ZKP libs if you're integrating them directly
-ark-groth16 = "0.4"
-ark-ff = "0.4"
-ark-serialize = "0.4"
+ark-groth16 = "0.4.0"
+ark-ff = "0.4.0"
+ark-serialize = "0.4.0"
 
-[workspace]
-members = [
-    "crates/bleep-telemetry",
-]
+
+
