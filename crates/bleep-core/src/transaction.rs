@@ -1,14 +1,55 @@
-use crate::crypto::proof_of_identity::ProofOfIdentity;
-use crate::networking::encryption::QuantumEncryption;
-use crate::p2p::gossip_protocol::GossipProtocol;
-use crate::p2p::multi_hop_routing::MultiHopRouting;
-use crate::p2p::dark_routing::DarkRouting;
-use crate::p2p::peer_manager::PeerManager;
-use crate::p2p::message_protocol::{P2PMessage, SecureMessage};
+use bleep_crypto::quantum_secure::QuantumSecure;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
 use std::sync::Arc;
-use tokio::sync::Mutex;
+
+// Re-export these from bleep_p2p once available
+pub struct PeerManager;
+pub struct GossipProtocol;
+pub struct MultiHopRouting;
+pub struct DarkRouting;
+
+impl PeerManager {
+    pub async fn add_transaction_to_pool(&self, _tx: ZKTransaction) {
+        // TODO: Implement once bleep_p2p is available
+    }
+}
+
+impl GossipProtocol {
+    pub async fn broadcast_message(&self, _message: P2PMessage) {
+        // TODO: Implement once bleep_p2p is available
+    }
+}
+
+impl MultiHopRouting {
+    pub async fn select_route(&self, _sender: &str, _receiver: &str) -> Vec<String> {
+        // TODO: Implement once bleep_p2p is available
+        vec![]
+    }
+
+    pub async fn forward_message(&self, _route: Vec<String>, _message: P2PMessage) {
+        // TODO: Implement once bleep_p2p is available
+    }
+}
+
+impl DarkRouting {
+    pub async fn select_anonymous_route(&self, _sender: &str) -> Vec<String> {
+        // TODO: Implement once bleep_p2p is available
+        vec![]
+    }
+
+    pub async fn forward_anonymous(&self, _route: Vec<String>, _message: P2PMessage) {
+        // TODO: Implement once bleep_p2p is available
+    }
+}
+
+/// Peer-to-peer message types
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum P2PMessage {
+    Transaction(ZKTransaction),
+    Block(Box<Block>),
+    Consensus(ConsensusMessage),
+}
 
 /// Represents a Zero-Knowledge Proof (ZKP)-based transaction
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -21,12 +62,11 @@ pub struct ZKTransaction {
 }
 
 impl ZKTransaction {
-    /// Creates a new ZKP transaction and signs it with quantum encryption
-    pub fn new(sender: &str, receiver: &str, amount: u64, private_key: &[u8]) -> Self {
+    /// Creates a new ZKP transaction and signs it with quantum-safe signature (SPHINCS+)
+    pub fn new(sender: &str, receiver: &str, amount: u64, quantum_secure: &QuantumSecure) -> Self {
         let timestamp = Utc::now().timestamp() as u64;
         let data = format!("{}{}{}{}", sender, receiver, amount, timestamp);
-        let signature = QuantumEncryption::sign_data(&data, private_key);
-
+        let signature = quantum_secure.sign(data.as_bytes());
         Self {
             sender: sender.to_string(),
             receiver: receiver.to_string(),
@@ -36,23 +76,45 @@ impl ZKTransaction {
         }
     }
 
-    /// Verifies transaction validity using quantum-safe signatures
-    pub fn verify(&self, public_key: &[u8]) -> bool {
+    /// Verifies transaction validity using quantum-safe signatures (SPHINCS+)
+    pub fn verify(&self, quantum_secure: &QuantumSecure) -> bool {
         let data = format!("{}{}{}{}", self.sender, self.receiver, self.amount, self.timestamp);
-        QuantumEncryption::verify_signature(&data, &self.signature, public_key)
+        quantum_secure.verify(data.as_bytes(), &self.signature)
     }
 }
 
-/// Manages transaction broadcasting and validation over P2P
+/// Consensus message types
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ConsensusMessage {
+    Propose,
+    Vote,
+    Commit
+}
+
+use crate::block::Block;
+
+/// Manages transaction lifecycle and validation
 pub struct TransactionManager {
-    peer_manager: Arc<PeerManager>,
-    gossip_protocol: Arc<GossipProtocol>,
-    multi_hop_routing: Arc<MultiHopRouting>,
-    dark_routing: Arc<DarkRouting>,
+    quantum_secure: Arc<QuantumSecure>,
+    pub(crate) peer_manager: Arc<PeerManager>,
+    pub(crate) gossip_protocol: Arc<GossipProtocol>,
+    pub(crate) multi_hop_routing: Arc<MultiHopRouting>,
+    pub(crate) dark_routing: Arc<DarkRouting>,
+}
+
+impl Default for TransactionManager {
+    fn default() -> Self {
+        Self::new(
+            Arc::new(PeerManager),
+            Arc::new(GossipProtocol),
+            Arc::new(MultiHopRouting),
+            Arc::new(DarkRouting),
+        )
+    }
 }
 
 impl TransactionManager {
-    /// Initializes a new TransactionManager with P2P modules
+    /// Creates a new TransactionManager with quantum-secure cryptography
     pub fn new(
         peer_manager: Arc<PeerManager>,
         gossip_protocol: Arc<GossipProtocol>,
@@ -60,6 +122,7 @@ impl TransactionManager {
         dark_routing: Arc<DarkRouting>,
     ) -> Self {
         Self {
+            quantum_secure: Arc::new(QuantumSecure::keygen()),
             peer_manager,
             gossip_protocol,
             multi_hop_routing,
@@ -75,13 +138,13 @@ impl TransactionManager {
 
     /// Routes a transaction securely over multiple hops
     pub async fn route_transaction(&self, sender: &str, receiver: &str, transaction: ZKTransaction) {
-        let route = self.multi_hop_routing.select_route(sender, receiver);
+        let route = self.multi_hop_routing.select_route(sender, receiver).await;
         self.multi_hop_routing.forward_message(route, P2PMessage::Transaction(transaction)).await;
     }
 
     /// Sends a fully anonymous transaction using DarkRouting
     pub async fn send_anonymous_transaction(&self, sender: &str, transaction: ZKTransaction) {
-        let route = self.dark_routing.select_anonymous_route(sender);
+        let route = self.dark_routing.select_anonymous_route(sender).await;
         self.dark_routing.forward_anonymous(route, P2PMessage::Transaction(transaction)).await;
     }
 
@@ -89,8 +152,8 @@ impl TransactionManager {
     pub async fn process_p2p_message(&self, message: P2PMessage) {
         match message {
             P2PMessage::Transaction(tx) => {
-                if tx.verify(&QuantumEncryption::get_public_key()) {
-                    self.peer_manager.add_transaction_to_pool(tx);
+                if tx.verify(&self.quantum_secure) {
+                    self.peer_manager.add_transaction_to_pool(tx).await;
                     println!("✅ Valid transaction received and added to mempool.");
                 } else {
                     println!("❌ Invalid transaction rejected.");
