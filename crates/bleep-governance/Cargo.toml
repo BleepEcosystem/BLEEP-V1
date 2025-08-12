@@ -1,3 +1,10 @@
+[package]
+name = "bleep-governance"
+version = "0.1.0"
+edition = "2021"
+authors = ["Muhammad Attahir <bleepecosystem@gmail.com>"]
+description = "Governance module for BLEEP blockchain."
+license = "MIT OR Apache-2.0"
 [dependencies]
 # --- Core Utilities ---
 serde = { version = "1.0", features = ["derive"] }
@@ -18,12 +25,12 @@ parking_lot = "0.12.1"
 sha2 = "0.10.8"
 aes-gcm = "0.10.3"
 aes = "0.8.3"
-pqcrypto = { version = "0.15", features = ["sphincs-shake256-128s-simple"] }
+pqcrypto = "0.15"
 spncsplus = { package = "pqcrypto-sphincsplus", version = "0.7.0" }
 
 # --- Zero-Knowledge Proofs ---
 bulletproofs = "4.0.0"
-curve25519-dalek = { version = "4.1.1", features = ["u64_backend"] }
+curve25519-dalek = "4.1.1"
 zksnarks = { path = "../bleep-zkp" } # adjust if external crate
 
 # --- Machine Learning / AI (Torch Inference) ---
@@ -31,10 +38,9 @@ tch = { version = "0.13", features = ["download-libtorch"] }
 
 # --- Distributed Storage ---
 ipfs-api-backend-hyper = "0.6.0-alpha.1"
-arweave-rs = "0.3.0"
+arweave-rs = "0.2.0"
 
 # --- Blockchain Interop ---
-ethereum-attestation = "0.2.0" # adjust if local module
 
 # --- Internal BLEEP Modules ---
 bleep-core = { path = "../bleep-core" }
@@ -43,7 +49,4 @@ bleep-state = { path = "../bleep-state" }
 bleep-interop = { path = "../bleep-interop" }
 bleep-ai = { path = "../bleep-ai" }
 
-[workspace]
-members = [
-    "crates/bleep-governance",
-]
+
