@@ -1,6 +1,8 @@
+[patch.crates-io]
+pqcrypto = { path = "vendor/pqcrypto" }
 # Cargo.toml (root of BLEEP-V1)
 [package]
-name = "bleep"
+name = "bleep-root"
 version = "1.0.0"
 edition = "2021"
 authors = ["Muhammad Attahir"]
@@ -38,23 +40,15 @@ k256 = "0.13.3"
 zeroize = { version = "1.7.0", features = ["zeroize_derive"] }
 aes-gcm = "0.10.3"
 hkdf = "0.12.4"
+indicatif = "0.16.2"
+console = { version = "0.16.0", features = ["std"] }
 pqcrypto = { version = "0.15", optional = true }
 pqcrypto-kyber = { version = "0.8.0", optional = true }
-pqcrypto-falcon = { version = "0.4.0", optional = true }
-pqcrypto-sphincsplus = { version = "0.7.0", optional = true }
 kyber = "0.1.1"
-threshold_crypto = "0.4.0"
 clang-sys = "1.4.0"
 ark-circom = "0.5.0"
-ark-groth16 = "0.5.0"
-ark-bn254 = "0.4.0"
-ark-bls12-381 = "0.4.0"
-ark-crypto-primitives = "0.4.0"
-ark-ff = "0.4.2"
-ark-ec = "0.4.2"
-ark-serialize = "0.4.0"
-bellman = "0.14.0"
-groth16 = "0.1.0"
+bellman = "0.14.0" # This line is being removed
+groth16 = "0.1.0" # This line is being removed
 ark-r1cs-std = "0.4.0"
 halo2_proofs = "0.3.0"
 merkle_light = "0.3.0"
@@ -69,15 +63,15 @@ sp-core = "32.0.0"
 sp-runtime = "32.0.0"
 sp-io = "28.0.0"
 web3 = "0.19.0"
-ethers-core = "=2.0.7"
-ethers = "=2.0.7"
+ethers-core = "2.0.10"
+ethers = "2.0.10"
 bigdecimal = "0.4.2"
 rocksdb = { version = "0.21.0", features = ["multi-threaded-cf"] }
 sled = "0.34.7"
 redb = "1.5.0"
 lru = "0.12.3"
 tensorflow = "0.21.0"
-ndarray = "0.15.6"
+ndarray = "0.15.1"
 rust-bert = "0.21.0"
 tch = { version = "0.13", features = ["download-libtorch"] }
 smartcore = "0.3.2"
@@ -90,11 +84,17 @@ log = "0.4.21"
 env_logger = "0.11.2"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-thiserror = "1.0.39"
+thiserror = "1.0.56"
 anyhow = "1.0.80"
 config = "0.14.0"
 clap = { version = "4.5.1", features = ["derive"] }
 chrono = { version = "0.4.34", features = ["serde"] }
+bleep-telemetry = { path = "crates/bleep-telemetry" }
+bleep-wallet-core = { path = "crates/bleep-wallet-core" }
+bleep-crypto = { path = "crates/bleep-crypto" }
+onnxruntime-ng = "1.16.1"
+bleep-core = { path = "crates/bleep-core" }
+bleep-consensus = { path = "crates/bleep-consensus" }
 
 [dev-dependencies]
 tokio-test = "0.4.3"
@@ -114,8 +114,28 @@ name = "bleep"
 path = "src/bin/main.rs"
 
 [features]
-default = ["mainnet"]
+default = ["mainnet", "quantum"]
 mainnet = []
 testnet = []
 simulator = []
-quantum = ["pqcrypto", "pqcrypto-kyber", "pqcrypto-falcon", "pqcrypto-sphincsplus"]
+quantum = ["pqcrypto", "pqcrypto-kyber"]
+
+[workspace]
+members = [
+    "crates/bleep-crypto",
+    "crates/bleep-core",
+    "crates/bleep-consensus",
+    "crates/bleep-auth",
+    "crates/bleep-cli",
+    "crates/bleep-governance",
+    "crates/bleep-indexer",
+    "crates/bleep-interop",
+    "crates/bleep-p2p",
+    "crates/bleep-pat",
+    "crates/bleep-rpc",
+    "crates/bleep-scheduler",
+    "crates/bleep-state",
+    "crates/bleep-telemetry",
+    "crates/bleep-vm",
+    "crates/bleep-wallet-core"
+]
