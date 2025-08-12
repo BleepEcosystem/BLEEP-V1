@@ -1,5 +1,5 @@
 [package]
-name = "bleep-connect"
+name = "bleep-interop"
 version = "1.0.0"
 edition = "2021"
 authors = ["Muhammad Attahir <bleepecosystem@gmail.com>"]
@@ -27,45 +27,36 @@ ed25519-dalek = "2.1"
 zeroize = { version = "1.7", features = ["zeroize_derive"] }
 
 # Ethereum
-ethers = { version = "2.0.7", features = ["abigen", "tokio-runtime"] }
+ethers = { version = "2.0.7", features = ["abigen"] }
 
-# Solana
-solana-client = "1.18.3"
-solana-sdk = "1.18.3"
 
 # Polkadot/Substrate
-subxt = "0.35"
 
 # Cosmos SDK (placeholder, implement if you have bindings)
-cosmos-sdk = "0.1.0" # or use custom crate
 
-# Aptos
-aptos-sdk = "0.4.1"
 
 # Sui
-sui-sdk = "0.2.1"
+sui-sdk = "0.0.0"
 
-# TON
-ton-blockchain = "0.1.0"
 
 # Bitcoin
 bitcoin = "0.30"
 
 # AI / ML - Anomaly Detection
-ndarray = "0.15"
-linfa = "0.7.0"
-linfa-clustering = "0.7.0"
+linfa = "0.7.1"
+linfa-clustering = "0.7.1"
+ndarray = "0.15.1"
 
 # ZKP with Arkworks
-ark-ff = "0.4"
-ark-ec = "0.4"
-ark-std = "0.4"
-ark-serialize = "0.4"
-ark-relations = "0.4"
-ark-groth16 = "0.4"
-ark-bls12-381 = "0.4"
-ark-r1cs-std = "0.4"
-ark-crypto-primitives = "0.4"
+ark-ff = "0.4.0"
+ark-ec = "0.4.0"
+ark-std = "0.4.0"
+ark-serialize = "0.4.0"
+ark-relations = "0.4.0"
+ark-groth16 = "0.4.0"
+ark-bls12-381 = "0.4.0"
+ark-r1cs-std = "0.4.0"
+ark-crypto-primitives = "0.4.0"
 
 # Logging & Errors
 log = "0.4"
@@ -76,7 +67,6 @@ thiserror = "1.0"
 tokio-util = { version = "0.7", features = ["codec"] }
 dashmap = "5.5"
 
-[workspace]
-members = [
-    "crates/bleep-interop",
-]
+
+
+
