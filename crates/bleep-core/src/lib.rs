@@ -2,6 +2,8 @@
 pub mod block;
 pub mod block_validation;
 pub mod blockchain;
+pub mod state;
+pub mod networking;
 
 // === Transactions and Mempool ===
 pub mod transaction;
@@ -14,10 +16,10 @@ pub mod proof_of_identity;
 pub mod anti_asset_loss;
 
 // === Re-exports for broader ecosystem access ===
-pub use block::*;
+pub use block::{Block};
 pub use block_validation::*;
 pub use blockchain::*;
-pub use transaction::*;
+pub use transaction::{ZKTransaction};
 pub use transaction_manager::*;
 pub use transaction_pool::*;
 pub use mempool::*;
