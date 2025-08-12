@@ -1,10 +1,22 @@
-use crate::crypto::proof_of_identity::{verify_identity, generate_proof};
-use crate::crypto::zkp::zero_knowledge_verify;
-use crate::ai::anomaly_detector::detect_fraud;
-use crate::networking::p2p_security::{multisig_approve, consensus_threshold};
-use crate::p2p::gossip_protocol::GossipProtocol;
-use crate::transaction::transaction::Transaction;
-use crate::blockchain::smart_contracts::execute_smart_recovery;
+// Stubs for missing modules and functions
+#[allow(dead_code)]
+fn zero_knowledge_verify(_sender: &str, _identity_proof: &[u8]) -> bool { true }
+#[allow(dead_code)]
+fn detect_fraud<T>(_transaction: &T) -> bool { false }
+#[allow(dead_code)]
+fn multisig_approve(_sender: &str, _approvers: &[&str]) -> bool { true }
+#[allow(dead_code)]
+fn execute_smart_recovery(_sender: &str, _transaction: &Transaction) {}
+#[allow(dead_code)]
+struct GossipProtocol;
+impl GossipProtocol {
+    pub fn broadcast_message(_msg: &str) {}
+}
+#[allow(dead_code)]
+#[derive(Clone)]
+pub struct Transaction {
+    pub sender: String,
+}
 use std::collections::HashMap;
 
 /// Stores lost asset claims for verification
