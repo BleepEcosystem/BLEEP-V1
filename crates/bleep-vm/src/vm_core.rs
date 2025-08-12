@@ -187,9 +187,8 @@ impl ContractOptimizer {
 }
 
 // security/mod.rs
-use ark_circom::{CircomBuilder, CircomConfig};
-use ark_groth16::{generate_random_parameters, create_random_proof, verify_proof};
-use ark_bn254::Bn254;
+use sha2::{Sha256, Digest};
+use std::collections::HashMap;
 
 pub struct ZeroKnowledgeVerifier {
     proving_key: Vec<u8>,
