@@ -1,0 +1,15 @@
+[package]
+name = "zksnarks"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ark-std = "0.3"
+ark-ff = "0.3"
+ark-ec = "0.3"
+ark-relations = "0.3"
+ark-groth16 = "0.3"
+ark-snark = "0.3"
+ark-serialize = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+rand = "0.8"
