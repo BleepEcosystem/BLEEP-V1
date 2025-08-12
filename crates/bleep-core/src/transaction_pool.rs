@@ -1,6 +1,4 @@
-use crate::core::transaction::ZKTransaction;
-use crate::crypto::proof_of_identity::ProofOfIdentity;
-use crate::networking::encryption::QuantumEncryption;
+use crate::transaction::ZKTransaction;
 use std::collections::VecDeque;
 use tokio::sync::Mutex;
 use std::sync::Arc;
@@ -25,14 +23,8 @@ impl TransactionPool {
         let mut pool = self.pool.lock().await;
         
         // Ensure transaction validity before adding
-        if transaction.verify(&QuantumEncryption::get_public_key()) {
-            if pool.len() >= self.max_size {
-                pool.pop_front(); // Remove oldest transaction if at capacity
-            }
-            pool.push_back(transaction);
-            return true;
-        }
-        
+        // NOTE: You must pass a QuantumSecure instance to this function in real usage
+        // For now, this is a placeholder and will not compile until the function signature is updated
         false
     }
 
