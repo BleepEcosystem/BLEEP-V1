@@ -9,6 +9,14 @@ repository = "https://github.com/bleep-project/bleep"
 readme = "README.md"
 
 [dependencies] 
+# Local workspace crates
+bleep-ai = { path = "crates/bleep-ai" }
+bleep-p2p = { path = "crates/bleep-p2p" }
+bleep-pat = { path = "crates/bleep-pat" }
+bleep-state = { path = "crates/bleep-state" }
+bleep-governance = { path = "crates/bleep-governance" }
+bleep-interop = { path = "crates/bleep-interop" }
+bleep-vm = { path = "crates/bleep-vm" }
 # External crates
 # (All valid and well-structured as provided)
 tokio = { version = "1.36", features = ["full"] }
@@ -39,7 +47,7 @@ aes-gcm = "0.10.3"
 hkdf = "0.12.4"
 indicatif = "0.16.2"
 console = { version = "0.16.0", features = ["std"] }
-pqcrypto = { version = "0.15", optional = true }
+pqcrypto = { version = "0.18.1", optional = true }
 pqcrypto-kyber = { version = "0.8.0", optional = true }
 kyber = "0.1.1"
 clang-sys = "1.4.0"
