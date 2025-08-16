@@ -36,6 +36,3 @@ name = "rpc"
 path = "src/bin/rpc.rs"
 
 
-members = [
-    "crates/bleep-cli",
-]
