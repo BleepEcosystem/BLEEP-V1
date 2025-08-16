@@ -8,9 +8,9 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 # FRAME + Substrate
-frame-support = { version = "24.0.0", default-features = false }
-frame-system = { version = "24.0.0", default-features = false }
-sp-runtime = { version = "24.0.0", default-features = false }
+frame-support = { version = "32.0.0", default-features = false }
+frame-system = { version = "32.0.0", default-features = false }
+sp-runtime = { version = "32.0.0", default-features = false }
 sp-std = { version = "14.0.0", default-features = false }
 
 # ink! smart contract framework
@@ -33,7 +33,7 @@ ark-groth16 = "0.4.0"
 ark-ff = "0.4.0"
 ark-bls12-381 = "0.4.0"
 ark-crypto-primitives = "0.4.0"
-pqcrypto = "0.15"
+pqcrypto = "0.18.1"
 pqcrypto-falcon = "0.4.0"
 pqcrypto-kyber = "0.8.0"
 
