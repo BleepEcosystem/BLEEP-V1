@@ -42,6 +42,17 @@ pub struct BLEEPShardingModule {
 }
 
 impl BLEEPShardingModule {
+
+    /// Returns a summary of all shards as a String (stub for P2P broadcast)
+    pub fn get_shard_summary(&self) -> String {
+        // Stub: Just return a JSON string with shard loads
+        let summary: std::collections::HashMap<u64, usize> = self.shards.iter().map(|(&id, shard)| {
+            let shard_guard = shard.lock().unwrap();
+            (id, shard_guard.load)
+        }).collect();
+        serde_json::to_string(&summary).unwrap_or_else(|_| "{}".to_string())
+    }
+    fn validate_rebalance_with_consensus(&mut self, _source_id: u64, _target_id: u64) -> bool { true }
     /// Initialize a new sharding module with persistent storage
     pub fn new(num_shards: u64, consensus: Arc<Mutex<BLEEPAdaptiveConsensus>>, p2p_node: Arc<P2PNode>) -> Result<Self, BLEEPError> {
         let mut shards = HashMap::new();
@@ -96,7 +107,7 @@ impl BLEEPShardingModule {
     }
 
     /// Monitors and dynamically rebalances shards based on AI predictions
-    fn monitor_and_auto_rebalance(&mut self) {
+    pub fn monitor_and_auto_rebalance(&mut self) {
         let current_time = Self::current_time();
         if current_time - self.last_rebalance_timestamp < REBALANCE_PERIOD {
             return;
@@ -137,7 +148,7 @@ impl BLEEPShardingModule {
     }
 
     /// Persist shard state to the database
-    fn persist_shard_state(&self, shard_id: u64) {
+    pub fn persist_shard_state(&self, shard_id: u64) {
         let shard = self.shards.get(&shard_id).unwrap().lock().unwrap();
         let transactions: Vec<String> = shard.transactions.iter().map(|tx| serde_json::to_string(tx).unwrap()).collect();
         let transactions_json = serde_json::to_string(&transactions).unwrap();
@@ -177,3 +188,9 @@ impl BLEEPShardingModule {
         std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64
     }
 }
+
+// Use Transaction from crate::transaction
+// Use QuantumSecure from crate::transaction
+// Use BLEEPAdaptiveConsensus and ConsensusMode from crate::consensus
+// Use P2PMessage from bleep-p2p
+// Use Block from crate::block

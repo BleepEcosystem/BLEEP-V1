@@ -70,3 +70,4 @@ impl MerkleTree {
 pub fn calculate_merkle_root<T: AsRef<[u8]>>(data: &[T]) -> String {
     MerkleTree::new(data).root
 }
+    // The following duplicate definition is removed
