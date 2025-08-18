@@ -6,7 +6,7 @@ use tokio::time::sleep;
 use kademlia_dht::{Kademlia, NodeId};
 use ai_security::{PeerScoring, SybilDetector};
 use quantum_crypto::{Kyber, SphincsPlus};
-use crate::p2p::message_protocol::{MessageProtocol, SecureMessage, MessageType};
+use crate::message_protocol::{MessageProtocol, SecureMessage, MessageType};
 
 /// Gossip propagation interval (adjustable)
 const GOSSIP_INTERVAL: Duration = Duration::from_secs(3);
@@ -94,3 +94,5 @@ impl GossipProtocol {
         }
     }
 }
+
+pub struct MessageProtocol;

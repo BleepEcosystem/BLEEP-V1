@@ -25,9 +25,11 @@ pub struct SecureMessage {
     pub message_type: MessageType,
     pub payload: Vec<u8>,
     pub signature: Vec<u8>,
+    pub hop_count: usize,
 }
 
 /// MessageProtocol for managing secure, private, AI-enhanced P2P messaging
+#[derive(Debug, Clone)]
 pub struct MessageProtocol {
     endpoint: Endpoint,
     noise: HandshakeState,
@@ -137,3 +139,16 @@ impl MessageProtocol {
         }
     }
 }
+
+/// Stub implementations for missing types and imports
+pub struct NoiseBuilder;
+pub struct HandshakeState;
+pub struct Endpoint;
+pub struct ServerConfig;
+pub struct TransportConfig;
+pub struct Connecting;
+pub struct Connection;
+pub struct AnomalyDetector;
+pub struct OnionEncryptor;
+pub struct GossipManager;
+pub struct PeerManager;

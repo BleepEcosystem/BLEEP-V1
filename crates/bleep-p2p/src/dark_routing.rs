@@ -1,9 +1,13 @@
+// Use PeerManager from peer_manager.rs
+
+// Stub for ranked_peers
+fn ranked_peers() -> Vec<String> { vec![] }
 use std::collections::{HashSet, HashMap};
 use std::sync::{Arc, Mutex};
 use rand::seq::SliceRandom;
 use crate::crypto::quantum_encryption::{Kyber, SphincsPlus};
-use crate::p2p::peer_manager::PeerManager;
-use crate::p2p::message_protocol::{MessageProtocol, SecureMessage};
+use crate::peer_manager::PeerManager;
+use crate::message_protocol::{MessageProtocol, SecureMessage};
 use ai_security::PeerScoring;
 
 const MAX_HOPS: usize = 6;
@@ -92,3 +96,5 @@ impl DarkRouting {
         Kyber::decrypt(payload, recipient)
     }
 }
+
+pub mod crypto { pub mod quantum_encryption { pub struct Kyber; pub struct SphincsPlus; } }
