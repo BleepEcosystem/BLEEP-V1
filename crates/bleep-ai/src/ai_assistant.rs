@@ -5,17 +5,15 @@ use std::sync::{Arc, Mutex};
 use log::{info, warn, error};
 use tokio::sync::mpsc;
 use serde::{Serialize, Deserialize};
-use crate::{
-    wallet::BLEEPWallet,
-    governance::BLEEPGovernance,
-    security::QuantumSecure,
-    smart_contracts::SmartContractOptimizer,
-    interoperability::InteroperabilityModule,
-    analytics::BLEEPAnalytics,
-    compliance::ComplianceModule,
-    sharding::AdaptiveSharding,
-    energy_monitor::EnergyMonitor,
-};
+use crate::wallet::BLEEPWallet;
+use crate::governance::BLEEPGovernance;
+use crate::security::QuantumSecure;
+use crate::smart_contracts::SmartContractOptimizer;
+use crate::interoperability::InteroperabilityModule;
+use crate::analytics::BLEEPAnalytics;
+use crate::compliance::ComplianceModule;
+use crate::sharding::AdaptiveSharding;
+use crate::energy_monitor::EnergyMonitor;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AIRequest {
@@ -69,14 +67,32 @@ impl BLEEPAIAssistant {
     pub async fn process_request(&self, request: AIRequest) -> AIResponse {
         info!("Processing AI request: {}", request.query);
         let response = match request.query.as_str() {
-            "wallet_balance" => self.wallet.get_balance(&request.user_id).await.unwrap_or(0).to_string(),
-            "governance_status" => self.governance.get_active_proposals().await.unwrap_or_else(|_| "Error fetching governance data".to_string()),
+            "wallet_balance" => crate::wallet::BLEEPWallet::get_balance_ref(self.wallet.as_ref(), &request.user_id).await.unwrap_or(0).to_string(),
+            "governance_status" => match crate::governance::BLEEPGovernance::get_active_proposals_ref(self.governance.as_ref()).await {
+                Ok(_) => "Governance data fetched".to_string(),
+                Err(_) => "Error fetching governance data".to_string(),
+            },
             "contract_optimization" => self.optimizer.optimize_code("sample smart contract code").unwrap_or_else(|_| "Optimization failed".to_string()),
-            "security_check" => self.security.analyze_risk(&request.user_id).await.unwrap_or_else(|_| "Security check failed".to_string()),
-            "shard_status" => self.sharding.get_shard_health().unwrap_or_else(|_| "Error fetching shard status".to_string()),
-            "energy_usage" => self.energy_monitor.get_usage_stats().unwrap_or_else(|_| "Energy data unavailable".to_string()),
-            "interoperability_status" => self.interoperability.get_status().unwrap_or_else(|_| "Interoperability module unavailable".to_string()),
-            "compliance_audit" => self.compliance.run_audit(&request.user_id).unwrap_or_else(|_| "Compliance audit failed".to_string()),
+            "security_check" => match crate::security::QuantumSecure::analyze_risk_ref(self.security.as_ref(), &request.user_id).await {
+                Ok(_) => "Security check passed".to_string(),
+                Err(_) => "Security check failed".to_string(),
+            },
+            "shard_status" => match crate::sharding::AdaptiveSharding::get_shard_health_ref(self.sharding.as_ref()).await {
+                Ok(_) => "Shard status fetched".to_string(),
+                Err(_) => "Error fetching shard status".to_string(),
+            },
+            "energy_usage" => match crate::energy_monitor::EnergyMonitor::get_usage_stats_ref(self.energy_monitor.as_ref()).await {
+                Ok(_) => "Energy data fetched".to_string(),
+                Err(_) => "Energy data unavailable".to_string(),
+            },
+            "interoperability_status" => match crate::interoperability::InteroperabilityModule::get_status_ref(self.interoperability.as_ref()).await {
+                Ok(_) => "Interoperability module available".to_string(),
+                Err(_) => "Interoperability module unavailable".to_string(),
+            },
+            "compliance_audit" => match crate::compliance::ComplianceModule::run_audit_ref(self.compliance.as_ref()).await {
+                Ok(_) => "Compliance audit passed".to_string(),
+                Err(_) => "Compliance audit failed".to_string(),
+            },
             _ => "I am still learning, please refine your query".to_string(),
         };
         
