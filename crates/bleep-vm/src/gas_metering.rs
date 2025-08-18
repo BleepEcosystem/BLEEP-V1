@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use metrics::{counter, gauge, histogram};
 use tracing::{info, warn};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Eq, Hash, PartialEq, Debug, Clone, Copy)]
 pub enum OpCode {
     Add = 0x01,
     Sub = 0x02,
@@ -96,8 +96,8 @@ impl GasMeter {
         // Calculate operation costs
         for chunk in contract.chunks(4) {
             if let Some(op) = self.decode_opcode(chunk) {
-                let base_cost = self.op_costs.get(&op).unwrap_or(&1);
-                let adjusted_cost = self.adjust_cost(*base_cost, &operation_gas);
+                let base_cost = self.op_costs.get(&op).map_or(1, |v| *v);
+                let adjusted_cost = self.adjust_cost(base_cost, &operation_gas);
                 total_gas += adjusted_cost;
                 *operation_gas.entry(op).or_insert(0) += adjusted_cost;
             }
@@ -127,8 +127,8 @@ impl GasMeter {
         // Calculate operation-specific gas
         for chunk in contract.chunks(4) {
             if let Some(op) = self.decode_opcode(chunk) {
-                let base_cost = self.op_costs.get(&op).unwrap_or(&1);
-                let adjusted_cost = self.adjust_cost(*base_cost, &operation_breakdown);
+                let base_cost = self.op_costs.get(&op).map_or(1, |v| *v);
+                let adjusted_cost = self.adjust_cost(base_cost, &operation_breakdown);
                 computation_gas += adjusted_cost;
                 *operation_breakdown.entry(op).or_insert(0) += adjusted_cost;
             }
@@ -208,9 +208,9 @@ impl GasMeter {
     }
 
     fn calculate_storage_gas(&self, operations: &HashMap<OpCode, u64>) -> u64 {
-        let storage_factor = self.storage_factor.load(Ordering::Relaxed);
-        let storage_ops = operations.get(&OpCode::Store).unwrap_or(&0);
-        storage_factor * storage_ops
+    let storage_factor = self.storage_factor.load(Ordering::Relaxed);
+    let storage_ops = operations.get(&OpCode::Store).copied().unwrap_or(0);
+    storage_factor * storage_ops
     }
 
     fn update_stats(&self, gas_used: u64) {
@@ -222,9 +222,9 @@ impl GasMeter {
         }
 
         // Update metrics
-        counter!("gas.total").increment(gas_used as u64);
-        gauge!("gas.current").set(gas_used as f64);
-        histogram!("gas.distribution").record(gas_used as f64);
+    counter!("gas.total", gas_used as u64);
+    gauge!("gas.current", gas_used as f64);
+    histogram!("gas.distribution", gas_used as f64);
     }
 
     fn update_historical_data(&self, contract: &Vec<u8>, gas_used: u64) {

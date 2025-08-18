@@ -15,25 +15,124 @@ tracing = "0.1.40"
 */
 
 // execution_engine.rs
-use wasmer::{Store, Module, Instance, ImportObject, Memory, MemoryType, Value};
+use wasmer::{Store, Module, Instance, Memory, MemoryType, Value};
+use std::sync::Arc;
+use lru::LruCache;
+use crate::errors::VMError;
+use crate::memory::MemoryChunk;
+use crate::optimizer::OptimizationLevel;
+use crate::quantum_hints::QuantumHints;
+use crate::zk_proof::ZkProof;
+use crate::execution_result::ExecutionResult;
+use ark_circom::{CircomConfig, CircomBuilder};
+// use quantum_mock::{QuantumCircuit, QuantumSimulator};
 use rayon::prelude::*;
 use metrics::{counter, gauge};
 
 pub struct ExecutionEngine {
     store: Store,
     memory_config: MemoryType,
-    metrics_registry: metrics::Registry,
+    // metrics_registry: metrics::Registry,
 }
 
 impl ExecutionEngine {
+    // Stub for missing method: execute_path
+    fn execute_path(&self, _instance: &wasmer::Instance, _path: &str, _memory: &wasmer::Memory) -> Result<Vec<u8>, VMError> {
+        // TODO: Implement actual execution logic
+        Ok(Vec::new())
+    }
+
+    // Stub for missing method: calculate_total_gas
+    fn calculate_total_gas(&self, _results: &Vec<Result<Vec<u8>, VMError>>) -> u64 {
+        // TODO: Implement actual gas calculation
+        0
+    }
+
+    // Stub for missing method: collect_metrics
+    fn collect_metrics(&self, _results: &Vec<Result<Vec<u8>, VMError>>) -> String {
+        // TODO: Implement actual metrics collection
+        String::new()
+    }
+}
+
+impl GasMeter {
+    // Stub for missing method: calculate_chunk_gas
+    fn calculate_chunk_gas(&self, _chunk: &[u8]) -> u64 {
+        // TODO: Implement actual chunk gas calculation
+        0
+    }
+}
+
+impl QuantumOptimizer {
+    // Stub for missing method: build_analysis_circuit
+    fn build_analysis_circuit(&self, _contract: &[u8]) -> Result<String, VMError> {
+        // TODO: Implement actual circuit building
+        Ok(String::new())
+    }
+
+    // Stub for missing method: convert_to_hints
+    fn convert_to_hints(&self, _simulation_result: String) -> Result<QuantumHints, VMError> {
+        // TODO: Implement actual conversion
+        Ok(QuantumHints { execution_paths: vec![] })
+    }
+}
+
+impl ContractOptimizer {
+    // Stub for missing method: prepare_input
+    fn prepare_input(&self, _contract: &[u8], _level: OptimizationLevel) -> Result<tensorflow::Tensor<f32>, VMError> {
+        // TODO: Implement actual input preparation
+        Ok(tensorflow::Tensor::new(&[1]))
+    }
+
+    // Stub for missing method: process_optimization_result
+    fn process_optimization_result(&self, _result: tensorflow::SessionRunArgs) -> Result<Vec<u8>, VMError> {
+        // TODO: Implement actual result processing
+        Ok(Vec::new())
+    }
+}
+
+impl ZeroKnowledgeVerifier {
+    // Stub for missing method: prepare_public_inputs
+    fn prepare_public_inputs(&self, _contract: &[u8]) -> Vec<u8> {
+        // TODO: Implement actual public input preparation
+        Vec::new()
+    }
+}
+
+// Stub for missing function: create_random_proof
+fn create_random_proof<T>(_circuit: T, _proving_key: &[u8], _rng: &mut impl rand::Rng) -> Result<ZkProof, VMError> {
+    // TODO: Implement actual proof creation
+    Ok(ZkProof { proof_data: Vec::new(), public_inputs: Vec::new() })
+}
+    // Stub for missing method: create_import_object
+    // Removed invalid ImportObject usage; use imports! macro in actual implementation
+
+    // Stub for missing method: create_import_object
+    // Removed invalid ImportObject usage; use imports! macro in actual implementation
+
+
+    pub fn optimize_execution_path(&self, path: &str) -> String {
+        // TODO: Implement actual optimization logic
+        path.to_string()
+    }
+
+    pub fn aggregate_results(&self, results: Vec<Result<Vec<u8>, VMError>>) -> Vec<u8> {
+        // TODO: Implement actual aggregation logic
+        // For now, just return the first successful result or empty vec
+        for res in results {
+            if let Ok(data) = res {
+                return data;
+            }
+        }
+        Vec::new()
+    }
+
     pub fn new() -> Self {
         let store = Store::default();
         let memory_config = MemoryType::new(32, Some(256), false);
-        
         Self {
             store,
             memory_config,
-            metrics_registry: metrics::Registry::default(),
         }
     }
 
@@ -49,7 +148,8 @@ impl ExecutionEngine {
 
         // Set up parallel execution context
         let import_object = self.create_import_object();
-        let instance = Instance::new(&module, &import_object)
+        let mut store = self.store.clone();
+        let instance = Instance::new(&mut store, &module, &import_object)
             .map_err(|e| VMError::ExecutionError(e.to_string()))?;
 
         // Apply quantum optimizations
@@ -60,9 +160,9 @@ impl ExecutionEngine {
         // Execute optimized paths in parallel
         let results = optimized_paths.par_iter()
             .map(|path| {
-                let memory = Memory::new(&self.store, self.memory_config)
+                let mut store = self.store.clone();
+                let memory = Memory::new(&mut store, self.memory_config.clone())
                     .map_err(|e| VMError::ExecutionError(e.to_string()))?;
-                
                 self.execute_path(&instance, path, &memory)
             })
             .collect::<Result<Vec<_>, VMError>>()?;
@@ -70,9 +170,9 @@ impl ExecutionEngine {
         // Aggregate results
         let output = self.aggregate_results(results);
         
-        // Update metrics
-        counter!("vm.executions.total").increment(1);
-        gauge!("vm.memory.usage").set(memory_chunk.size as f64);
+    // Update metrics
+    counter!("vm.executions.total", 1);
+    gauge!("vm.memory.usage", memory_chunk.size as f64);
 
         Ok(ExecutionResult {
             output: Some(output),
@@ -82,10 +182,9 @@ impl ExecutionEngine {
     }
 
     // Additional helper methods...
-}
+// End of ExecutionEngine impl
 
 // gas_metering.rs
-use dashmap::DashMap;
 
 pub struct GasMeter {
     cost_table: DashMap<u8, u64>,
@@ -112,13 +211,13 @@ impl GasMeter {
             .map(|chunk| self.calculate_chunk_gas(chunk))
             .sum();
 
-        counter!("vm.gas.calculated").increment(1);
+    counter!("vm.gas.calculated", 1);
         chunks
     }
 }
 
 // quantum/mod.rs
-use quantum_mock::{QuantumCircuit, QuantumSimulator, Qubit};
+// use quantum_mock::{QuantumCircuit, QuantumSimulator, Qubit};
 
 pub struct QuantumOptimizer {
     simulator: QuantumSimulator,
@@ -160,7 +259,7 @@ impl ContractOptimizer {
         let model = SavedModelBundle::load(
             &SessionOptions::new(),
             &["serve"],
-            &graph,
+            &mut graph,
             "models/contract_optimizer"
         ).expect("Failed to load AI model");
 
@@ -176,7 +275,7 @@ impl ContractOptimizer {
         
         // Prepare input tensor
         let input_tensor = self.prepare_input(contract, level)?;
-        args.add_feed(&self.graph.operation("input").unwrap(), 0, &input_tensor);
+    args.add_feed(&self.graph.operation("input").unwrap(), 0, &input_tensor);
         
         // Run optimization
         let result = self.model.session.run(&mut args)
